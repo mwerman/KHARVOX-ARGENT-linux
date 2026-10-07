@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Weekly: catches upstream ARGENT releases whose zip layout no longer matches the installer.
+    - cron: "17 5 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck
+        run: |
+          command -v shellcheck >/dev/null || sudo apt-get install -y shellcheck
+          shellcheck install.sh argent-launch
+
+      - name: Syntax
+        run: |
+          bash -n install.sh
+          bash -n argent-launch
+          python3 -m py_compile tools/argent_tools.py tests/test_argent.py
+
+      - name: Offline tests (fake Steam tree, fake release zip)
+        run: python3 -m unittest discover -s tests -v
+
+  # Runs the exact code path of ./install.sh against the real latest upstream release:
+  # download, SHA-256 check against GitHub's published digest, extract, x64 PE check, layout check.
+  upstream-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch and verify the latest KHARVOX-ARGENT release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 tools/argent_tools.py fetch --dest "$RUNNER_TEMP/argent" | tee "$RUNNER_TEMP/fetch.json"
+
+      - name: Show what was shipped
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP/argent" -maxdepth 2 -printf '%y %P\n' | sort | head -100
