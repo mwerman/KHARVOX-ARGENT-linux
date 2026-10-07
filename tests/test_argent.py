@@ -331,6 +331,33 @@ class WrapperTests(unittest.TestCase):
         self.assertIn("Proton\\ -\\ Experimental/proton", res.stdout)
         self.assertTrue(res.stdout.startswith("/steam/ubuntu12_32/reaper SteamLaunch AppId=782330 -- "))
 
+    def test_real_steam_command_with_idtech_launcher(self):
+        # Verbatim shape of the command Steam passed on a real CachyOS install (paths from a user log).
+        steam = "/home/matt/.local/share/Steam"
+        res = self.run_wrapper(
+            f"{steam}/ubuntu12_32/steam-launch-wrapper", "--",
+            f"{steam}/ubuntu12_32/reaper", "SteamLaunch", "AppId=782330", "--",
+            f"{steam}/steamapps/common/SteamLinuxRuntime_4/_v2-entry-point", "--verb=waitforexitandrun", "--",
+            f"{steam}/steamapps/common/Proton - Experimental/proton", "waitforexitandrun",
+            f"{steam}/steamapps/common/DOOMEternal/launcher/idTechLauncher.exe",
+        )  # fmt: skip
+        self.assertEqual(res.returncode, 0, res.stderr)
+        self.assertIn("My\\ ARGENT/ArgentLauncher.exe", res.stdout)
+        self.assertNotIn("idTechLauncher", res.stdout)
+        self.assertIn("Proton\\ -\\ Experimental/proton waitforexitandrun", res.stdout)
+
+    def test_unknown_exe_inside_game_folder_is_replaced_but_outside_is_not(self):
+        cfg = Path(self.env["XDG_CONFIG_HOME"]) / "kharvox-argent" / "config"
+        cfg.write_text(cfg.read_text() + "GAME_DIR=/games/steamapps/common/DOOMEternal\n")
+        inside = self.run_wrapper("proton", "waitforexitandrun", "/games/steamapps/common/DOOMEternal/bin/Other.EXE")
+        self.assertEqual(inside.returncode, 0, inside.stderr)
+        self.assertIn("ArgentLauncher.exe", inside.stdout)
+        outside = self.run_wrapper("proton", "waitforexitandrun", "/games/steamapps/common/OtherGame/Other.exe")
+        self.assertEqual(outside.returncode, 1)
+        # a folder that merely shares the prefix must not match
+        sibling = self.run_wrapper("proton", "run", "/games/steamapps/common/DOOMEternal2/x.exe")
+        self.assertEqual(sibling.returncode, 1)
+
     def test_trailing_user_args_dropped_unless_forwarded(self):
         cmd = ["proton", "waitforexitandrun", "/g/DOOMEternalx64vk.exe", "-foo"]
         self.assertNotIn("-foo", self.run_wrapper(*cmd).stdout)
@@ -339,7 +366,7 @@ class WrapperTests(unittest.TestCase):
     def test_fails_loudly_when_no_game_exe(self):
         res = self.run_wrapper("proton", "waitforexitandrun", "/g/SomethingElse.exe")
         self.assertEqual(res.returncode, 1)
-        self.assertIn("no DOOMEternal*.exe", res.stderr)
+        self.assertIn("could not find the game executable", res.stderr)
 
     def test_usage_without_arguments(self):
         self.assertEqual(self.run_wrapper().returncode, 2)

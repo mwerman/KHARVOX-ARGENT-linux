@@ -36,6 +36,9 @@ The installer:
 5. installs the `argent-launch` wrapper to `~/.local/bin/argent-launch`;
 6. prints the exact Launch Options line to paste into Steam.
 
+If `./install.sh` says *permission denied* (GitHub's web upload drops the executable bit), run `bash install.sh` instead,
+or fix the repo once with `git update-index --chmod=+x install.sh argent-launch tools/argent_tools.py`.
+
 Options: `--tag vX` (specific upstream release), `--zip FILE` (offline install), `--force` (wipe the installed
 ARGENT folder first), `--uninstall`. `STEAM_DIR=...` and `ARGENT_DIR=...` override the detected locations.
 Setting `GITHUB_TOKEN` avoids GitHub API rate limits.
@@ -48,8 +51,8 @@ DOOM Eternal -> Properties -> General -> Launch Options:
 /home/<you>/.local/bin/argent-launch %command%
 ```
 
-(The installer prints the exact line for your system.) Steam expands `%command%` to the full Proton command for
-`DOOMEternalx64vk.exe`; the wrapper swaps that one executable for `ArgentLauncher.exe`. The launcher therefore runs in the
+(The installer prints the exact line for your system.) Steam expands `%command%` to the full Proton command for the game's Steam launch executable
+(`launcher/idTechLauncher.exe`); the wrapper swaps that one executable for `ArgentLauncher.exe`. The launcher therefore runs in the
 same prefix, container and Steam app context (appid 782330) as the normal game, which is what Steam's DRM and Proton's
 OpenXR bridge expect. Remove the launch option to play flat DOOM Eternal again.
 
@@ -77,7 +80,7 @@ Then clear the Launch Options in Steam.
 | Symptom | What to do |
 |---|---|
 | Game starts flat | The launch option is missing or wrong. Re-paste the line the installer printed. |
-| `argent-launch: no DOOMEternal*.exe in the command Steam passed` | Steam's command did not contain the game exe. See `~/.local/state/kharvox-argent/launch.log`. |
+| `argent-launch: could not find the game executable` | Steam's command did not contain `idTechLauncher.exe`. The log (`~/.local/state/kharvox-argent/launch.log`) shows the exact command Steam passed. |
 | Launcher window never appears | Run Steam from a terminal and read the output. Add `PROTON_LOG=1` before the wrapper in Launch Options (`PROTON_LOG=1 /path/argent-launch %command%`); the log lands at `~/steam-782330.log`. |
 | Crash in `MSVCP140.dll` | Install the VC++ runtime into the prefix: `protontricks 782330 vcrun2022` (the same fix tf2vr-linux documents). |
 | Headset shows nothing / OpenXR errors | Check SteamVR is the active OpenXR runtime and running. Other runtimes (Monado, WiVRn) need their socket exposed to Steam's container, e.g. `PRESSURE_VESSEL_FILESYSTEMS_RW=$XDG_RUNTIME_DIR/monado_comp_ipc`. |

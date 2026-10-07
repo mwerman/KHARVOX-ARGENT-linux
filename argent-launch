@@ -5,8 +5,9 @@
 #
 #     /path/to/argent-launch %command%
 #
-# Steam expands %command% to the complete Proton command line for DOOMEternalx64vk.exe.
-# This wrapper swaps that one executable for ArgentLauncher.exe and runs everything else
+# Steam expands %command% to the complete Proton command line for the game's Steam launch
+# executable (launcher/idTechLauncher.exe). This wrapper swaps that one executable for
+# ArgentLauncher.exe and runs everything else
 # unchanged, so the launcher starts inside the same Proton prefix, the same Steam runtime
 # container and the same Steam app context (SteamGameId 782330) as the normal game.
 #
@@ -51,6 +52,7 @@ esac
 [ -r "$CONFIG_FILE" ] || die "not installed: $CONFIG_FILE is missing (run ./install.sh)"
 ARGENT_DIR=""
 ARGENT_LAUNCHER=""
+GAME_DIR=""
 # shellcheck source=/dev/null
 . "$CONFIG_FILE"
 if [ -z "$ARGENT_DIR" ] || [ -z "$ARGENT_LAUNCHER" ]; then
@@ -61,6 +63,23 @@ fi
 if [ "${SteamGameId:-}" != "782330" ]; then
     log "WARNING: SteamGameId is '${SteamGameId:-<unset>}', expected 782330; was this started from the DOOM Eternal entry in Steam?"
 fi
+
+# Is this argument the game's Steam launch executable?
+#   - Steam starts DOOM Eternal through launcher/idTechLauncher.exe (not DOOMEternalx64vk.exe)
+#   - DOOMEternal*.exe is accepted too, in case Steam's launch entry changes
+#   - any other .exe inside the DOOM Eternal install folder (GAME_DIR from the config)
+is_game_exe() {
+    local path_lc base
+    path_lc="${1,,}"
+    base="${path_lc##*/}"
+    case "$base" in
+        idtechlauncher.exe | doometernal*.exe) return 0 ;;
+    esac
+    if [ -n "$GAME_DIR" ] && [ "${path_lc%.exe}" != "$path_lc" ] && [ "${path_lc#"${GAME_DIR,,}/"}" != "$path_lc" ]; then
+        return 0
+    fi
+    return 1
+}
 
 cmd=()
 replaced=0
@@ -76,22 +95,17 @@ for arg in "$@"; do
         fi
         continue
     fi
-    base="${arg##*/}"
-    base="${base,,}"
-    case "$base" in
-        doometernal*.exe)
-            cmd+=("$ARGENT_LAUNCHER")
-            replaced=1
-            ;;
-        *)
-            cmd+=("$arg")
-            ;;
-    esac
+    if is_game_exe "$arg"; then
+        cmd+=("$ARGENT_LAUNCHER")
+        replaced=1
+    else
+        cmd+=("$arg")
+    fi
 done
 
 if [ "$replaced" -ne 1 ]; then
     log "command received: $*"
-    die "no DOOMEternal*.exe in the command Steam passed (see $LOG_FILE). Remove the launch option to play the flat game."
+    die "could not find the game executable (idTechLauncher.exe) in the command Steam passed (see $LOG_FILE). Remove the launch option to play the flat game."
 fi
 
 if [ "${#dropped[@]}" -gt 0 ]; then
