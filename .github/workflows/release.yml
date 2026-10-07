@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Offline tests
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Build the Linux package
+        id: pkg
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME//\//-}"
+          name="kharvox-argent-linux-${version}"
+          mkdir -p "dist/${name}"
+          cp -a install.sh argent-launch tools README.md LICENSE "dist/${name}/"
+          chmod +x "dist/${name}/install.sh" "dist/${name}/argent-launch" "dist/${name}/tools/argent_tools.py"
+          tar -C dist -czf "dist/${name}.tar.gz" "${name}"
+          rm -rf "dist/${name}"
+          (cd dist && sha256sum "${name}.tar.gz" > "${name}.tar.gz.sha256")
+          echo "name=${name}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke-test the package exactly as a user would unpack it
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/unpacked"
+          tar -C "$RUNNER_TEMP/unpacked" -xzf "dist/${{ steps.pkg.outputs.name }}.tar.gz"
+          cd "$RUNNER_TEMP/unpacked/${{ steps.pkg.outputs.name }}"
+          ./install.sh --help
+          # no Steam on a CI runner: --check must fail cleanly (exit 1), not crash
+          set +e
+          HOME="$RUNNER_TEMP/fakehome" ./install.sh --check
+          status=$?
+          set -e
+          test "$status" -eq 1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.pkg.outputs.name }}
+          path: dist/*
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --generate-notes
