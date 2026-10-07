@@ -1,194 +1,106 @@
-![KHARVOX: ARGENT](assets/kharvox-argent-logo.png)
-
-# Installation
-
-1. Download the KHARVOX: ARGENT release ZIP.
-2. Extract the complete archive into a new, writable folder of your choice. Do not run the launcher from inside the ZIP file, and do not copy ARGENT into the DOOM Eternal installation folder.
-3. Make sure DOOM Eternal, your headset software and your OpenXR runtime are installed and ready. Steam and Microsoft Store installations are supported.
-4. Run **ArgentLauncher.exe** from the extracted ARGENT folder.
-5. Select **DOOMEternalx64vk.exe**, configure your VR options and press **PLAY**.
-
-Keep all extracted ARGENT files together in the same folder. Start DOOM Eternal through **ArgentLauncher.exe** whenever you want to play in VR.
-
-## Controller Binding
-
-![ARGENT controller bindings — right-handed layout](assets/argent-controller-bindings.png)
-
-## Instructions
-
-### Getting started
-
-Connect your headset and controllers and start your OpenXR runtime. Select the DOOM Eternal executable, then press PLAY. Steam and Microsoft Store installations are supported.
-
-Keep the game window focused for input. The native VR intro runs before the game. After its first start, Disable VR Intro appears under Rendering.
-
-### Limitations
-
-KHARVOX: ARGENT is a private project developed with limited resources. Compatibility and performance can vary between hardware configurations.
-
-AMD graphics cards currently have known rendering issues. Compatibility may improve with future updates. Some effects, particularly water, can also produce visual artifacts in VR.
-
-The mod has been tested with VDXR, SteamVR�s OpenXR runtime and Meta�s OpenXR runtime. Other runtimes have not been validated and are unsupported.
-
-### Reccomended Headsets and Runtimes:
-
-Quest: VDXR or MetaXR
-
-Index: SteamVR
-
-Please do not use SteamVR with Meta headsets. It�s known to cause issues!
-
-### Example Configuration
-
-Ryzen 9 5900X, 32GB DDR4, 4080S
-
-70% Renderscale, FSR on, DLSS off, HighDetails
-
-### Rendering
-
-The game world is rendered in stereoscopic VR. Supported menus and tutorials automatically appear on a virtual screen.
-
-Enable 3D Cinematics for stereoscopic presentation of supported cinematic sequences. Restart the game after changing rendering options.
-
-### RenderScale and FSR Upscaling
-
-100% is the native reference pixel count. Lower values reduce rendering work.
-
-Enable FSR Upscaling to upscale reduced eye images and sharpen the result. FSR is disabled at 100% or higher. Start at 100%, then reduce gradually if needed.
-
-The SteamVR path uses 100% and does not apply the launcher�s FSR resolution reduction. Adjust resolution through SteamVR instead.
-
-### DLSS and anti-aliasing
-
-Select DLSS in the game�s graphics settings if your graphics card supports it. Stereo DLSS uses separate histories for each eye but remains experimental.
-
-DOOM Eternal normally applies temporal anti-aliasing, which can make the image look blurry in VR. ARGENT blocks native TAA in stereo rendering.
-
-Disable FSR Upscaling in the launcher when using DLSS. FSR forces the game�s anti-aliasing off, so choose either FSR or DLSS. Compare image clarity, stability and performance in your headset.
-
-### Desktop Mirror
-
-Enable Desktop Mirror (Right Eye) under Rendering to display the right-eye view on your monitor. This is useful for spectators, screenshots and recording. It is disabled by default.
-
-The mirror preserves the eye image�s aspect ratio. Black bars may appear because a VR eye image does not usually match a 16:9 desktop window.
-
-### Mirror resolution
-
-Choose the desktop output resolution from the dropdown:
-
-- 720p: 1280 � 720
-- 1080p: 1920 � 1080
-- 2K / 1440p: 2560 � 1440
-- 4K: 3840 � 2160
-
-The default selection is 1080p. When Desktop Mirror is disabled, the desktop window uses 720p.
-
-Mirror resolution controls the desktop output size, not the headset�s rendering resolution. Higher output resolutions may increase GPU overhead and will not add detail beyond the rendered eye image. Restart the game after changing these settings.
-
-### Movement and controls
-
-Index controller can access the Pause Menu with Touchpad click.
-
-See Controller Binding for the full mapping.
-
-Under Movement, choose smooth or snap turning, adjust turning speed or snap angle, and select head-directed or off-hand-directed movement.
-
-Enable Left Handed Mode to reveal the layout selector:
-
-- Button Swap: Moves weapon trigger/grip and Use/melee stick-click to the left controller. Equipment trigger/grip and Mission Info/Dossier stick-click move to the right. Face buttons and stick directions stay on their original sides.
-- Button and Stick Swap: Also swaps the face-button pairs and stick directions. Move and select weapons with the right stick; turn, select Crucible and open the weapon wheel with the left stick.
-
-The physical Menu button remains Pause.
-
-### Two-hand support and physical melee
-
-Enable Virtual Gunstock for two-hand support. Hold the off-hand grip near the weapon�s support point to grab it. Release the grip to let go. A grip press away from the weapon cycles equipment.
-
-Physical Glory Kill / melee uses controller speed, the Punch speed threshold and the selected punch hand. A valid target and the game�s normal activation conditions are still required.
-
-### PSVR2 Toolkit
-
-PSVR2 Adaptive Triggers is experimental and requires PlayStation VR2 hardware, a working PSVR2 SteamVR setup and PSVR2 Toolkit installed separately. PSVR2Toolkit version 1.0 or higher is required.
-
-It provides weapon-specific adaptive-trigger resistance on the weapon hand. Normal controller rumble works independently.
-
-Missing or inactive Toolkit software does not block game startup, but adaptive-trigger effects will be unavailable.
-
-### bHaptics
-
-Use compatible bHaptics gear and bHaptics Player for Windows. Pair and test your devices in the Player before starting the game, then enable bHaptics under VR Options.
-
-Missing hardware, an unavailable Player or a local bridge error does not block game startup, but suit feedback will be unavailable. Normal controller rumble works independently.
-
-### Logging and troubleshooting
-
-Extended Logging is disabled by default. Enable it under Rendering before pressing PLAY when investigating a problem.
-
-Additional logging can affect performance. Disable it again when you have finished collecting logs.
-
-### About
-
-KHARVOX:ARGENT is an independent community project and is not affiliated with, endorsed by, or sponsored by the publisher or developers of supported games.
-
-All trademarks and product names are property of their respective owners. A legally acquired installation of each supported game is required!
-
-## Building from source
-
-This repository contains the ARGENT source code. The instructions below describe the Windows build and its required dependencies.
-
-### Requirements
-
-- Windows x64.
-- Visual Studio with the **Desktop development with C++** workload, MSVC x64 tools, MASM and a Windows SDK. The current release build uses Visual Studio 2026.
-- CMake with support for your installed Visual Studio generator, Git and PowerShell.
-- The complete project assets and dependencies under `third-party`, including the OpenXR loader, Vulkan headers, MinHook, SPIRV-Cross, cgltf, pocketmod, bHaptics and PSVR2 Toolkit runtime components.
-- An x64 Release installation of glslang and SPIRV-Tools compatible with the MSVC toolchain. Its install directory must contain `include/glslang/Include/glslang_c_interface.h`, `bin/glslang.exe` and these libraries under `lib`: `glslang.lib`, `glslang-default-resource-limits.lib`, `SPIRV-Tools-opt.lib` and `SPIRV-Tools.lib`.
-
-The bHaptics runtime DLL is not included in this repository. Obtain `bhaptics_library.dll` from the bHaptics SDK and place it in `third-party/bhaptics/` before building the runtime package.
-
-### Configure and compile
-
-Clone the repository and initialize its submodules:
-
-```powershell
-git clone --recurse-submodules https://github.com/CactusVRStudios/KHARVOX-ARGENT.git
-cd KHARVOX-ARGENT
-git submodule update --init --recursive
+# KHARVOX: ARGENT (DOOM Eternal VR) on Linux
+
+Runs [CactusVRStudios/KHARVOX-ARGENT](https://github.com/CactusVRStudios/KHARVOX-ARGENT) on Linux through
+Proton, started from Steam, and streamed to a Steam Frame (or any SteamVR headset) from the PC.
+The approach follows [Monkellie/tf2vr-linux](https://github.com/Monkellie/tf2vr-linux): the official
+Windows release is downloaded and verified, installed next to the game, and launched under Proton.
+
+This repo contains no game or mod files. ARGENT is a Windows x64 mod (MSVC, MASM, MinHook) that hooks the
+Windows build of DOOM Eternal, so nothing is recompiled for Linux: the Windows build runs inside the
+game's own Proton prefix.
+
+## Requirements
+
+- An **x86-64 Linux PC** with a GPU that runs DOOM Eternal. The Steam Frame itself is ARM and cannot run this;
+  the game runs on the PC and is streamed.
+- DOOM Eternal **on Steam**, started once normally so Proton creates its prefix.
+- **Proton Experimental** forced for DOOM Eternal (Properties -> Compatibility).
+- **SteamVR** as the active OpenXR runtime (SteamVR -> Settings -> OpenXR -> Set SteamVR as OpenXR runtime).
+- `python3` (Arch/CachyOS: `sudo pacman -S python`). Nothing else: download, SHA-256 check and unzip use Python's standard library.
+
+## Install
+
+```
+git clone https://github.com/<you>/kharvox-argent-linux.git   # or unpack the release tarball
+cd kharvox-argent-linux
+./install.sh --check      # optional: checks Steam, DOOM Eternal, Proton tool, OpenXR runtime; changes nothing
+./install.sh
 ```
 
-Run the following from the project directory in a Visual Studio Developer PowerShell. Replace the example glslang path with your own installation path. If using a different Visual Studio version, select its matching CMake generator.
+The installer:
 
-```powershell
-cmake -S . -B build-clean -G "Visual Studio 18 2026" -A x64 `
-  -DARGENT_CLEAN_RELEASE=ON `
-  -DARGENT_BUILD_SFS_TOOLS=ON `
-  -DARGENT_GLSLANG_ROOT="C:/Dependencies/glslang"
+1. finds Steam and the library DOOM Eternal is in (any library, any drive);
+2. downloads the latest upstream release zip and checks it against the SHA-256 GitHub publishes for the asset;
+3. checks that `ArgentLauncher.exe` is a 64-bit Windows executable and that the files it needs are beside it;
+4. installs ARGENT to `~/.local/share/kharvox-argent/ARGENT` (never into the game folder, as upstream requires);
+5. installs the `argent-launch` wrapper to `~/.local/bin/argent-launch`;
+6. prints the exact Launch Options line to paste into Steam.
 
-cmake --build build-clean --config Release --target `
-  ArgentLayer ArgentLauncher ArgentRuntimeProbe `
-  KharvoxBhapticsBridge KharvoxPsvr2Bridge --parallel
+Options: `--tag vX` (specific upstream release), `--zip FILE` (offline install), `--force` (wipe the installed
+ARGENT folder first), `--uninstall`. `STEAM_DIR=...` and `ARGENT_DIR=...` override the detected locations.
+Setting `GITHUB_TOKEN` avoids GitHub API rate limits.
+
+## Add to Steam
+
+DOOM Eternal -> Properties -> General -> Launch Options:
+
+```
+/home/<you>/.local/bin/argent-launch %command%
 ```
 
-The binaries are written to `build-clean/Release`. Keep the required runtime DLLs, shader binaries and assets with the launcher; the EXE alone is not a complete installation.
+(The installer prints the exact line for your system.) Steam expands `%command%` to the full Proton command for
+`DOOMEternalx64vk.exe`; the wrapper swaps that one executable for `ArgentLauncher.exe`. The launcher therefore runs in the
+same prefix, container and Steam app context (appid 782330) as the normal game, which is what Steam's DRM and Proton's
+OpenXR bridge expect. Remove the launch option to play flat DOOM Eternal again.
 
-### Create a playable package
+## Play on the Steam Frame
 
-After building, use the release packaging script. Choose an unused release number and set `-CrtDirectory` to the x64 Microsoft Visual C++ redistributable directory installed with your Visual Studio toolchain:
+1. On the PC: start SteamVR and connect the Frame (Steam Link PC VR streaming).
+2. Press **Play** on DOOM Eternal in Steam, from the PC or from the Frame's Steam library.
+3. `ArgentLauncher` opens **on the PC desktop**. First run: select
+   `Z:\...\DOOMEternalx64vk.exe` (the installer prints the exact path; Wine's `Z:` is Linux `/`),
+   choose your VR options, press **PLAY**. Keep the game window focused for input (upstream requirement).
+4. SteamVR streaming to the Frame shows the game. Under SteamVR, set resolution in SteamVR, not in the launcher
+   (upstream: the SteamVR path ignores the launcher's FSR resolution reduction).
 
-```powershell
-.\tools\package_release.ps1 -ReleaseName ARGENT-Alpha-Test-r999 `
-  -CrtDirectory "C:/Path/To/VC/Redist/MSVC/<version>/x64/Microsoft.VC145.CRT"
+## Updating and uninstalling
+
+```
+git pull && ./install.sh     # installs the newest upstream release over the old one; launcher settings are kept
+./install.sh --uninstall     # removes ARGENT, the wrapper and its config; never touches the game
 ```
 
-The script creates a runtime folder and ZIP under `releases`, verifies the bundled integrations and preserves calibration defaults. It refuses to overwrite an existing release. Playable packages contain runtime files and assets only; source documentation, logs and debug symbols stay outside the package.
+Then clear the Launch Options in Steam.
 
-### Tests
+## Troubleshooting
 
-To build and run the test suite:
+| Symptom | What to do |
+|---|---|
+| Game starts flat | The launch option is missing or wrong. Re-paste the line the installer printed. |
+| `argent-launch: no DOOMEternal*.exe in the command Steam passed` | Steam's command did not contain the game exe. See `~/.local/state/kharvox-argent/launch.log`. |
+| Launcher window never appears | Run Steam from a terminal and read the output. Add `PROTON_LOG=1` before the wrapper in Launch Options (`PROTON_LOG=1 /path/argent-launch %command%`); the log lands at `~/steam-782330.log`. |
+| Crash in `MSVCP140.dll` | Install the VC++ runtime into the prefix: `protontricks 782330 vcrun2022` (the same fix tf2vr-linux documents). |
+| Headset shows nothing / OpenXR errors | Check SteamVR is the active OpenXR runtime and running. Other runtimes (Monado, WiVRn) need their socket exposed to Steam's container, e.g. `PRESSURE_VESSEL_FILESYSTEMS_RW=$XDG_RUNTIME_DIR/monado_comp_ipc`. |
+| `install.sh` cannot find Steam | `STEAM_DIR=/path/to/Steam ./install.sh` |
+| Installed outside `$HOME` and game cannot see it | Add the folder to `STEAM_COMPAT_MOUNTS` in the Launch Options. |
 
-```powershell
-cmake --build build-clean --config Release --parallel
-ctest --test-dir build-clean -C Release --output-on-failure
-```
+ARGENT's own log: enable **Extended Logging** under Rendering in the launcher before pressing PLAY.
 
-Some tests require a Vulkan-capable GPU, an OpenXR runtime or developer capture fixtures that may not be included in the source distribution. Automated tests do not replace gameplay and headset testing.
+## What is and is not verified
+
+Verified by the tests in this repo (`tests/`, run by CI): Steam/library/appmanifest/compat-tool detection, zip handling
+(including zips with backslash paths and zip-slip attempts), the 64-bit PE check, SHA-256 comparison, install,
+update, uninstall, and the wrapper's argument rewriting.
+
+**Not verified:** ARGENT's launcher and Vulkan/OpenXR layer under Proton. Upstream states it was tested with VDXR,
+SteamVR and Meta runtimes on Windows. This is expected to work the way tf2vr-linux does, but it is experimental.
+Fixes tf2vr-linux needs that are **not** ported, because they are specific to the Titanfall 2 mod: the `mmdevapi.dll`
+audio-loopback patch, forcing a newer VC++ runtime (ARGENT's release bundles the CRT per its packaging script),
+and setting `SteamGameId` by hand (starting from Steam's own Play button already provides it).
+If you hit one of those symptoms, open an issue with the logs.
+
+## Credits and license
+
+[CactusVRStudios](https://github.com/CactusVRStudios/KHARVOX-ARGENT) for ARGENT (MIT);
+[Monkellie/tf2vr-linux](https://github.com/Monkellie/tf2vr-linux) for the method. Not affiliated with id Software,
+Bethesda, Valve or the ARGENT authors. MIT licensed, see `LICENSE`. A legally acquired copy of DOOM Eternal is required.

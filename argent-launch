@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# argent-launch - Steam launch-option wrapper for KHARVOX: ARGENT (DOOM Eternal VR) on Linux.
+#
+# Steam -> DOOM Eternal -> Properties -> General -> Launch Options:
+#
+#     /path/to/argent-launch %command%
+#
+# Steam expands %command% to the complete Proton command line for DOOMEternalx64vk.exe.
+# This wrapper swaps that one executable for ArgentLauncher.exe and runs everything else
+# unchanged, so the launcher starts inside the same Proton prefix, the same Steam runtime
+# container and the same Steam app context (SteamGameId 782330) as the normal game.
+#
+# Environment:
+#   ARGENT_DRY_RUN=1       print the command that would run, then exit
+#   ARGENT_FORWARD_ARGS=1  also forward arguments that follow %command% to the launcher
+set -eu
+
+CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/kharvox-argent/config"
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/kharvox-argent"
+LOG_FILE="$LOG_DIR/launch.log"
+mkdir -p "$LOG_DIR" 2>/dev/null || true
+
+log() { printf '[%s] %s\n' "$(date '+%F %T')" "$*" >>"$LOG_FILE" 2>/dev/null || true; }
+die() {
+    log "ERROR: $*"
+    printf 'argent-launch: %s\n' "$*" >&2
+    exit 1
+}
+
+usage() {
+    cat <<'USAGE'
+argent-launch: use it as a Steam launch option for DOOM Eternal:
+
+    /path/to/argent-launch %command%
+
+Run ./install.sh from the kharvox-argent-linux folder first.
+USAGE
+}
+
+case "${1:-}" in
+    -h | --help)
+        usage
+        exit 0
+        ;;
+    "")
+        usage >&2
+        exit 2
+        ;;
+esac
+
+[ -r "$CONFIG_FILE" ] || die "not installed: $CONFIG_FILE is missing (run ./install.sh)"
+ARGENT_DIR=""
+ARGENT_LAUNCHER=""
+# shellcheck source=/dev/null
+. "$CONFIG_FILE"
+if [ -z "$ARGENT_DIR" ] || [ -z "$ARGENT_LAUNCHER" ]; then
+    die "$CONFIG_FILE is incomplete (run ./install.sh again)"
+fi
+[ -f "$ARGENT_LAUNCHER" ] || die "$ARGENT_LAUNCHER not found (run ./install.sh again)"
+
+if [ "${SteamGameId:-}" != "782330" ]; then
+    log "WARNING: SteamGameId is '${SteamGameId:-<unset>}', expected 782330; was this started from the DOOM Eternal entry in Steam?"
+fi
+
+cmd=()
+replaced=0
+dropped=()
+for arg in "$@"; do
+    if [ "$replaced" -eq 1 ]; then
+        # Whatever Steam appended after the game exe (the user's own arguments).
+        # ArgentLauncher is a GUI that does not take game arguments, so drop them by default.
+        if [ "${ARGENT_FORWARD_ARGS:-0}" = "1" ]; then
+            cmd+=("$arg")
+        else
+            dropped+=("$arg")
+        fi
+        continue
+    fi
+    base="${arg##*/}"
+    base="${base,,}"
+    case "$base" in
+        doometernal*.exe)
+            cmd+=("$ARGENT_LAUNCHER")
+            replaced=1
+            ;;
+        *)
+            cmd+=("$arg")
+            ;;
+    esac
+done
+
+if [ "$replaced" -ne 1 ]; then
+    log "command received: $*"
+    die "no DOOMEternal*.exe in the command Steam passed (see $LOG_FILE). Remove the launch option to play the flat game."
+fi
+
+if [ "${#dropped[@]}" -gt 0 ]; then
+    log "dropped arguments after the game exe: ${dropped[*]}"
+fi
+
+cd "$ARGENT_DIR" || die "cannot enter $ARGENT_DIR"
+
+log "launching ArgentLauncher.exe (SteamGameId=${SteamGameId:-<unset>}, prefix=${STEAM_COMPAT_DATA_PATH:-<unset>})"
+
+if [ "${ARGENT_DRY_RUN:-0}" = "1" ]; then
+    printf '%q ' "${cmd[@]}"
+    printf '\n'
+    exit 0
+fi
+
+exec "${cmd[@]}"
