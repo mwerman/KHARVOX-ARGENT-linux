@@ -316,7 +316,7 @@ class WrapperTests(unittest.TestCase):
         self._tmp.cleanup()
 
     def run_wrapper(self, *args, **env):
-        return subprocess.run([str(WRAPPER), *args], env={**self.env, **env}, capture_output=True, text=True)
+        return subprocess.run(["bash", str(WRAPPER), *args], env={**self.env, **env}, capture_output=True, text=True)
 
     def test_replaces_only_the_game_exe(self):
         game = "/games/steamapps/common/DOOMEternal/DOOMEternalx64vk.exe"
@@ -355,7 +355,7 @@ class WrapperTests(unittest.TestCase):
         probe.write_text('#!/bin/sh\npwd\nfor a in "$@"; do echo "arg:$a"; done\n')
         probe.chmod(0o755)
         res = subprocess.run(
-            [str(WRAPPER), str(probe), "waitforexitandrun", "/g/DOOMEternalx64vk.exe"],
+            ["bash", str(WRAPPER), str(probe), "waitforexitandrun", "/g/DOOMEternalx64vk.exe"],
             env={k: v for k, v in self.env.items() if k != "ARGENT_DRY_RUN"},
             capture_output=True,
             text=True,
